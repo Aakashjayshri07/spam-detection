@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Android folder
 app/
 
@@ -43,4 +44,51 @@ venv/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
+=======
+# Android folder
+app/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# VS Code
+.vscode/
+
+# Model files
+*.joblib
+
+# Environment
+venv/
+.env
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+>>>>>>> 54a46582245d7c120b67f0d61c36592f5dcb64f4
 Thumbs.db 
