@@ -2,13 +2,14 @@ from flask import Flask, request, jsonify, render_template
 import joblib
 import pandas as pd
 import os
-
+from flask_cors import CORS
 # Load the trained model
 model_file = 'text_clf_svm_model.joblib'
 text_clf = joblib.load(model_file)
 
 # Create a Flask application
 app = Flask(__name__)
+CORS(app)
 
 # Home route
 @app.route('/')
