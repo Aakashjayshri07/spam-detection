@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Spam Detector</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --danger-color: #ea4335;
+            --success-color: #34a853;
+            --light-gray: #f5f5f5;
+            --dark-gray: #333;
+            --medium-gray: #757575;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: var(--dark-gray);
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: var(--medium-gray);
+            font-weight: 300;
+        }
+        
+        .detection-form {
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 120px;
+            transition: border 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        
+        .btn:hover {
+            background-color: #3367d6;
+            transform: translateY(-1px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .result-container {
+            padding: 20px;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+        }
+        
+        .result-title {
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .spam {
+            background-color: rgba(234, 67, 53, 0.1);
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        .ham {
+            background-color: rgba(52, 168, 83, 0.1);
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .spam-text {
+            color: var(--danger-color);
+        }
+        
+        .ham-text {
+            color: var(--success-color);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--medium-gray);
+            font-size: 14px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SMS Spam Detection</h1>
+            <p class="subtitle">Analyze your text messages for potential spam content</p>
+        </header>
+        
+        <div class="detection-form">
+            <div class="form-group">
+                <label for="text-input">Enter your message:</label>
+                <textarea id="text-input" placeholder="Paste the SMS message you want to analyze here..."></textarea>
+            </div>
+            
+            <button type="button" class="btn" onclick="submitText()">
+                Analyze Message
+            </button>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing message...</p>
+            </div>
+        </div>
+        
+        <div class="result-container" id="result-container">
+            <h3 class="result-title">Analysis Result</h3>
+            <p id="result-text"></p>
+            <p id="confidence"></p>
+        </div>
+    </div>
+    
+    <footer>
+        <p>SMS Spam Detection System &copy; 2023</p>
+    </footer>
+
+    <script>
+        async function submitText() {
+            const text = document.getElementById('text-input').value.trim();
+            
+            if (!text) {
+                alert('Please enter a message to analyze');
+                return;
+            }
+            
+            // Show loading spinner
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result-container').style.display = 'none';
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text }),
+                });
+
+                const data = await response.json();
+                
+                // Display results
+                const resultContainer = document.getElementById('result-container');
+                const resultText = document.getElementById('result-text');
+                const confidence = document.getElementById('confidence');
+                
+                resultContainer.className = 'result-container ' + (data.prediction === 'spam' ? 'spam' : 'ham');
+                resultText.className = data.prediction === 'spam' ? 'spam-text' : 'ham-text';
+                resultText.innerText = data.prediction === 'spam' ? 'This message is SPAM' : 'This message is NOT SPAM';
+                
+                if (data.confidence) {
+                    confidence.innerText = `Confidence: ${Math.round(data.confidence * 100)}%`;
+                }
+                
+                resultContainer.style.display = 'block';
+            } catch (error) {
+                alert('An error occurred while analyzing the message. Please try again.');
+                console.error(error);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
